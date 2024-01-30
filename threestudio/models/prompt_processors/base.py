@@ -47,6 +47,8 @@ class PromptProcessorOutput:
     perp_neg_f_fsb: Tuple[float, float, float]
     perp_neg_f_fs: Tuple[float, float, float]
     perp_neg_f_sf: Tuple[float, float, float]
+    prompt: str
+    prompts_vd: List[str]
 
     def get_text_embeddings(
         self,
@@ -293,8 +295,11 @@ class PromptProcessor(BaseObject):
 
         self.direction2idx = {d.name: i for i, d in enumerate(self.directions)}
 
-        with open(os.path.join("load/prompt_library.json"), "r") as f:
-            self.prompt_library = json.load(f)
+        if os.path.exists("load/prompt_library.json"):
+            with open(os.path.join("load/prompt_library.json"), "r") as f:
+                self.prompt_library = json.load(f)
+        else:
+            self.prompt_library = {}
         # use provided prompt or find prompt in library
         self.prompt = self.preprocess_prompt(self.cfg.prompt)
         # use provided negative prompt
@@ -504,8 +509,10 @@ class PromptProcessor(BaseObject):
         return PromptProcessorOutput(
             text_embeddings=self.text_embeddings,
             uncond_text_embeddings=self.uncond_text_embeddings,
+            prompt=self.prompt,
             text_embeddings_vd=self.text_embeddings_vd,
             uncond_text_embeddings_vd=self.uncond_text_embeddings_vd,
+            prompts_vd=self.prompts_vd,
             directions=self.directions,
             direction2idx=self.direction2idx,
             use_perp_neg=self.cfg.use_perp_neg,
